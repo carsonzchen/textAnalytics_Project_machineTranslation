@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pickle
 import json
 from sklearn.model_selection import train_test_split
 
@@ -25,35 +26,37 @@ def encode_sequences(tokenizer, length, lines):
     seq = pad_sequences(seq, maxlen=length, padding='post')
     return seq
 
-# Build prototype NMT model
-def define_model(in_vocab, out_vocab, in_timesteps, out_timesteps,units):
-    model = Sequential()
-    model.add(Embedding(in_vocab, units, input_length=in_timesteps, mask_zero=True))
-    model.add(LSTM(units))
-    model.add(RepeatVector(out_timesteps))
-    model.add(LSTM(units, return_sequences=True))
-    model.add(Dense(out_vocab, activation='softmax'))
-    return model
-
 if __name__ == '__main__':
-    data = np.loadtxt("data/data.csv", delimiter=",", dtype = 'str')
-    max_length = 15
+    max_length = 10
+    paramfile = 'intermediate/dim_dict.json'
+    datafile = 'data/datasample.csv'
+    data = np.loadtxt(datafile, delimiter=",", dtype = 'str')
 
-    # tokenize English text and create dictionary
+    # tokenize English text and save tokenizer object
     eng_tokenizer = tokenization(data[:, 0])
-    eng_dict = eng_tokenizer.index_word
-    with open('intermediate/eng_dict.json', 'w') as fp:
-        json.dump(eng_dict, fp)
+#     eng_dict = eng_tokenizer.index_word
+#     with open('intermediate/eng_dict.json', 'w') as fp:
+#         json.dump(eng_dict, fp)
     eng_vocab = len(eng_tokenizer.word_index) + 1
     print('English Vocabulary Size: %d' % eng_vocab)
+    with open('intermediate/eng_tokenizer.pickle', 'wb') as handle:
+        pickle.dump(eng_tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    # tokenize Spanish text and create dictionary
+    # tokenize Spanish text
     esp_tokenizer = tokenization(data[:, 1])
-    esp_dict = esp_tokenizer.index_word
-    with open('intermediate/esp_dict.json', 'w') as fp:
-        json.dump(esp_dict, fp)
+#     esp_dict = esp_tokenizer.index_word
+#     with open('intermediate/esp_dict.json', 'w') as fp:
+#         json.dump(esp_dict, fp)
     esp_vocab = len(esp_tokenizer.word_index) + 1
     print('Spanish Vocabulary Size: %d' % esp_vocab)
+
+    # save dictionary dimensions as json for training
+    dim_dict = {}
+    dim_dict['eng_vocab'] = eng_vocab
+    dim_dict['esp_vocab'] = esp_vocab
+    dim_dict['max_length'] = max_length
+    with open(paramfile, 'w') as fp:
+        json.dump(dim_dict, fp)
 
     # split data into train and test set
     train, test = train_test_split(data, test_size=0.05, random_state = 12)
@@ -69,9 +72,3 @@ if __name__ == '__main__':
     testY = encode_sequences(eng_tokenizer, max_length, test[:, 0])
     np.savetxt('intermediate/testX.csv', testX, delimiter=",")
     np.savetxt('intermediate/testY.csv', testY, delimiter=",")
-
-    # model compilation
-    model = define_model(esp_vocab, eng_vocab, max_length, max_length, 512)
-    rms = optimizers.RMSprop(lr=0.01)
-    model.compile(optimizer=rms, loss='sparse_categorical_crossentropy')
-    model.save('intermediate/model_v0.h5')

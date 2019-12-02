@@ -1,10 +1,12 @@
-# FAKE - F# Make
 data/*
 intermediate/*
 notebook/*
+defunct/*
+models/*
 
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
 .DS_Store
 *.pages
+.vscode/*

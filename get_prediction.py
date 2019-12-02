@@ -1,8 +1,8 @@
-import string
-import re
-from numpy import array, argmax, random, take
 import pandas as pd
-from keras.preprocessing.text import Tokenizer
+import numpy as np
+import pickle
+import os
+import re
 
 from keras.models import Sequential
 from keras.layers import Dense, LSTM, Embedding, RepeatVector
@@ -10,7 +10,9 @@ from keras.callbacks import ModelCheckpoint
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 from keras import optimizers
-import matplotlib.pyplot as plt
+
+from nltk import word_tokenize
+from nltk.translate.bleu_score import sentence_bleu
 
 def get_word(n, tokenizer):
     for word, index in tokenizer.word_index.items():
@@ -34,19 +36,43 @@ def get_sentence(pred_array, tokenizer):
                 sentence.append(word)
     return sentence
 
-def gen_predicted_text(pred_array, tokenizer):
+def gen_predicted_text(preds_array, tokenizer):
     alltext = []
-    for pred in preds:
+    for pred in preds_array:
         s_list = get_sentence(pred, tokenizer)
-        s = ' '.join(s_list).strip(' ')
+        s = re.sub("\s\s+", " ", ' '.join(s_list))
         alltext.append(s)
     return alltext
 
-filename = 'model.p1.24nov2019'
-model = load_model(filename)
-preds = model.predict_classes(testX.reshape((testX.shape[0],testX.shape[1])))
+def gen_sent_bleu(orig_s, pred_s):
+    orig_list = [token for token in word_tokenize(orig_s)]
+    pred_list = [token for token in word_tokenize(pred_s)]
+    score = sentence_bleu([orig_list], pred_list, weights=(1, 0, 0, 0))
+    return score
 
-k = gen_predicted_text(preds, eng_tokenizer)
+if __name__ == "__main__":
+    # Load model
+    os.environ["CUDA_VISIBLE_DEVICES"] = "2" # Use specific GPU
+    modelfile = 'models/model_v0.h5'
+    model = load_model(modelfile)
 
-pred_df = pd.DataFrame({'actual' : test[:,0], 'predicted' : k})
-pred_df.sample(20)
+    # Load test data sets
+    testX = np.loadtxt("intermediate/testX.csv", delimiter=",")
+    testY = np.loadtxt("intermediate/testY.csv", delimiter=",")
+    testX = testX[0:101] # Save computational resources by looking at only first 100
+    testY = testY[0:101] # Save computational resources by looking at only first 100
+
+    # Load english dictionary for looking up
+    engdict_file = 'intermediate/eng_tokenizer.pickle'
+    with open(engdict_file, 'rb') as handle:
+        eng_tokenizer = pickle.load(handle)
+
+    # Predict results and convert to original text
+    preds = model.predict_classes(testX.reshape((testX.shape[0],testX.shape[1])))
+    pred_text = gen_predicted_text(preds, eng_tokenizer)
+    orig_text = gen_predicted_text(testY, eng_tokenizer)
+
+    # Print a sample of predicted text
+    pred_df = pd.DataFrame({'actual' : orig_text, 'predicted' : pred_text})
+    pred_df['bleu'] = pred_df.apply(lambda x: gen_sent_bleu(x.actual, x.predicted), axis=1)
+    pred_df.sample(100).to_csv('sample_output_100.csv', index= False)
