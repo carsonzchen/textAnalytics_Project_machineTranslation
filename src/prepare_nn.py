@@ -34,9 +34,6 @@ if __name__ == '__main__':
 
     # tokenize English text and save tokenizer object
     eng_tokenizer = tokenization(data[:, 0])
-#     eng_dict = eng_tokenizer.index_word
-#     with open('intermediate/eng_dict.json', 'w') as fp:
-#         json.dump(eng_dict, fp)
     eng_vocab = len(eng_tokenizer.word_index) + 1
     print('English Vocabulary Size: %d' % eng_vocab)
     with open('intermediate/eng_tokenizer.pickle', 'wb') as handle:
@@ -44,9 +41,6 @@ if __name__ == '__main__':
 
     # tokenize Spanish text
     esp_tokenizer = tokenization(data[:, 1])
-#     esp_dict = esp_tokenizer.index_word
-#     with open('intermediate/esp_dict.json', 'w') as fp:
-#         json.dump(esp_dict, fp)
     esp_vocab = len(esp_tokenizer.word_index) + 1
     print('Spanish Vocabulary Size: %d' % esp_vocab)
 
