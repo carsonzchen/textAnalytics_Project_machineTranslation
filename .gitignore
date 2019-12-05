@@ -3,6 +3,8 @@ intermediate/*
 notebook/*
 defunct/*
 models/*
+results/*
+deliverables/*
 
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
@@ -10,3 +12,4 @@ __pycache__/
 .DS_Store
 *.pages
 .vscode/*
+*.docx

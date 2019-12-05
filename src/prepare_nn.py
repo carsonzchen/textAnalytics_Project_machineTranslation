@@ -28,15 +28,15 @@ def encode_sequences(tokenizer, length, lines):
 
 if __name__ == '__main__':
     max_length = 10
-    paramfile = 'intermediate/dim_dict.json'
-    datafile = 'data/datasample.csv'
+    paramfile = '../intermediate/dim_dict.json'
+    datafile = '../data/datasample.csv'
     data = np.loadtxt(datafile, delimiter=",", dtype = 'str')
 
     # tokenize English text and save tokenizer object
     eng_tokenizer = tokenization(data[:, 0])
     eng_vocab = len(eng_tokenizer.word_index) + 1
     print('English Vocabulary Size: %d' % eng_vocab)
-    with open('intermediate/eng_tokenizer.pickle', 'wb') as handle:
+    with open('../intermediate/eng_tokenizer.pickle', 'wb') as handle:
         pickle.dump(eng_tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
     # tokenize Spanish text
@@ -58,11 +58,11 @@ if __name__ == '__main__':
     # prepare training data
     trainX = encode_sequences(esp_tokenizer, max_length, train[:, 1])
     trainY = encode_sequences(eng_tokenizer, max_length, train[:, 0])
-    np.savetxt('intermediate/trainX.csv', trainX, delimiter=",")
-    np.savetxt('intermediate/trainY.csv', trainY, delimiter=",")
+    np.savetxt('../intermediate/trainX.csv', trainX, delimiter=",")
+    np.savetxt('../intermediate/trainY.csv', trainY, delimiter=",")
 
     # prepare validation data
     testX = encode_sequences(esp_tokenizer, max_length, test[:, 1])
     testY = encode_sequences(eng_tokenizer, max_length, test[:, 0])
-    np.savetxt('intermediate/testX.csv', testX, delimiter=",")
-    np.savetxt('intermediate/testY.csv', testY, delimiter=",")
+    np.savetxt('../intermediate/testX.csv', testX, delimiter=",")
+    np.savetxt('../intermediate/testY.csv', testY, delimiter=",")
