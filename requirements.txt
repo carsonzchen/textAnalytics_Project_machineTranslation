@@ -34,7 +34,7 @@ clyent==1.2.2
 colorama==0.4.1
 configparser==4.0.2
 contextlib2==0.6.0
-cryptography==2.8
+cryptography==3.2
 cycler==0.10.0
 cymem==1.31.2
 Cython==0.29.13
