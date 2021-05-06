@@ -54,7 +54,7 @@ fasttext==0.9.1
 filelock==3.0.12
 flasgger==0.9.3
 Flask==1.1.1
-Flask-Cors==3.0.8
+Flask-Cors==3.0.9
 fsspec==0.5.2
 gast==0.3.2
 gensim==3.8.0
